@@ -29,21 +29,21 @@
 const SUPABASE_URL='YOUR_SUPABASE_PROJECT_URL';
 const SUPABASE_ANON_KEY='YOUR_SUPABASE_ANON_OR_PUBLISHABLE_KEY';
 const initialProducts=[
- {id:'mango',name:'Mango Achaar',price:null,weight:'250 g',description:'Traditional mango achaar made with select raw mangoes and aromatic spices.',image_url:'images/mango.webp',sort_order:1},
- {id:'lemon-dates',name:'Lemon Dates Achaar',price:null,weight:'',description:'A tangy and gently sweet pickle combining lemon and dates.',image_url:'images/lemon-dates.webp',sort_order:2},
- {id:'beetroot-dates',name:'Beetroot Dates Achaar',price:null,weight:'',description:'A colourful, flavourful combination of beetroot and dates.',image_url:'images/beetroot-dates.webp',sort_order:3},
- {id:'ginger',name:'Ginger Achaar',price:null,weight:'',description:'A bold, aromatic ginger pickle.',image_url:'images/ginger.webp',sort_order:4},
- {id:'shadavari',name:'Shadavari Achaar',price:null,weight:'',description:'A distinctive traditional pickle from our collection.',image_url:'images/shadavari.webp',sort_order:5},
- {id:'gooseberry',name:'Gooseberry Achaar',price:null,weight:'',description:'Amla pickle with a delicious tangy flavour.',image_url:'images/gooseberry.webp',sort_order:6},
- {id:'pineapple',name:'Pineapple Achaar',price:null,weight:'',description:'A sweet-and-tangy pineapple pickle.',image_url:'images/pineapple.webp',sort_order:7},
- {id:'garlic',name:'Garlic Achaar',price:null,weight:'',description:'Aromatic garlic pickle with traditional spices.',image_url:'images/garlic.webp',sort_order:8}
+ {id:'mango',name:'Mango Achaar',price:null,weight:'250 g',description:'Traditional mango achaar made with select raw mangoes and aromatic spices.',image_url:'mango.webp',sort_order:1},
+ {id:'lemon-dates',name:'Lemon Dates Achaar',price:null,weight:'',description:'A tangy and gently sweet pickle combining lemon and dates.',image_url:'lemon-dates.webp',sort_order:2},
+ {id:'beetroot-dates',name:'Beetroot Dates Achaar',price:null,weight:'',description:'A colourful, flavourful combination of beetroot and dates.',image_url:'beetroot-dates.webp',sort_order:3},
+ {id:'ginger',name:'Ginger Achaar',price:null,weight:'',description:'A bold, aromatic ginger pickle.',image_url:'ginger.webp',sort_order:4},
+ {id:'shadavari',name:'Shadavari Achaar',price:null,weight:'',description:'A distinctive traditional pickle from our collection.',image_url:'shadavari.webp',sort_order:5},
+ {id:'gooseberry',name:'Gooseberry Achaar',price:null,weight:'',description:'Amla pickle with a delicious tangy flavour.',image_url:'gooseberry.webp',sort_order:6},
+ {id:'pineapple',name:'Pineapple Achaar',price:null,weight:'',description:'A sweet-and-tangy pineapple pickle.',image_url:'pineapple.webp',sort_order:7},
+ {id:'garlic',name:'Garlic Achaar',price:null,weight:'',description:'Aromatic garlic pickle with traditional spices.',image_url:'garlic.webp',sort_order:8}
 ];
 let db=null,products=[],editingId=null;
 const $=id=>document.getElementById(id);const configured=()=>!SUPABASE_URL.startsWith('YOUR_')&&!SUPABASE_ANON_KEY.startsWith('YOUR_');
 if(configured()&&window.supabase)db=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
 function escapeHtml(s=''){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function money(p){return p===null||p===undefined||p===''?'':'₹'+Number(p).toLocaleString('en-IN');}
-function render(){const root=$('products');if(!products.length){root.innerHTML='<div class="empty">Our pickle collection will be updated soon.</div>';return;}root.innerHTML=products.map((p,i)=>`<article class="poster-item"><div class="poster-photo"><img src="${escapeHtml(p.image_url||'images/'+['mango','lemon-dates','beetroot-dates','ginger','shadavari','gooseberry','pineapple','garlic'][i%8]+'.webp')}" alt="${escapeHtml(p.name)}" loading="lazy" onerror="this.src='images/mango.webp'"></div><div class="poster-copy"><h3>${escapeHtml(p.name)}</h3><div class="desc">${escapeHtml(p.description||'Traditional homemade achaar.')}</div><div class="poster-meta">${p.weight?`<span class="weight">${escapeHtml(p.weight)}</span>`:''}${money(p.price)?`<span class="price">${money(p.price)}</span>`:''}</div></div></article>`).join('');}
+function render(){const root=$('products');if(!products.length){root.innerHTML='<div class="empty">Our pickle collection will be updated soon.</div>';return;}root.innerHTML=products.map((p,i)=>`<article class="poster-item"><div class="poster-photo"><img src="${escapeHtml(p.image_url||''+['mango','lemon-dates','beetroot-dates','ginger','shadavari','gooseberry','pineapple','garlic'][i%8]+'.webp')}" alt="${escapeHtml(p.name)}" loading="lazy" onerror="this.onerror=null;this.src='mango.webp'"></div><div class="poster-copy"><h3>${escapeHtml(p.name)}</h3><div class="desc">${escapeHtml(p.description||'Traditional homemade achaar.')}</div><div class="poster-meta">${p.weight?`<span class="weight">${escapeHtml(p.weight)}</span>`:''}${money(p.price)?`<span class="price">${money(p.price)}</span>`:''}</div></div></article>`).join('');}
 async function load(){if(!db){products=initialProducts;render();return;}const {data,error}=await db.from('products').select('*').eq('active',true).order('sort_order');if(error){products=initialProducts;render();console.error(error);return;}products=data||[];render();}
 $('adminOpen').onclick=()=>{$('adminModal').classList.add('show');};$('closeModal').onclick=()=>$('adminModal').classList.remove('show');$('adminModal').onclick=e=>{if(e.target===$('adminModal'))$('adminModal').classList.remove('show')};
 $('loginBtn').onclick=async()=>{if(!db){$('loginStatus').textContent='Connect your Supabase project first. See SETUP.md in the download.';return;}$('loginStatus').textContent='Signing in…';const {error}=await db.auth.signInWithPassword({email:$('email').value,password:$('password').value});$('loginStatus').textContent=error?error.message:'';if(!error)showDashboard();};
